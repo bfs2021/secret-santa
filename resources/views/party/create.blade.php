@@ -1,17 +1,32 @@
 @extends('layouts.app')
 
 @section('main')
-    <h2>Start your Secret Santa</h2>
+    <section class="card">
+        <h1 class="text-3xl sm:text-4xl">Start the {{ now()->year }} Secret Santa</h1>
+        <p class="mt-3 text-stone-600 dark:text-stone-300">Everyone joins from one link and answers a few short questions, so whoever draws their name knows what to get. Nobody needs an account.</p>
 
-    <p class="font-semibold">How it works:</p>
+        <ol class="mt-6 space-y-3">
+            @foreach ([
+                ['Share the link', 'Send the invite link to everyone taking part.'],
+                ['Everyone answers', 'Each person fills in a short questionnaire. Every question is optional.'],
+                ['Draw names', 'You start the draw from your email, and everyone finds out who they\'re buying for.'],
+            ] as [$title, $text])
+                <li class="flex gap-3">
+                    <span class="font-display text-lg leading-snug text-berry-600 tabular-nums dark:text-berry-300">{{ $loop->iteration }}.</span>
+                    <p><span class="font-bold">{{ $title }}.</span> <span class="text-stone-600 dark:text-stone-300">{{ $text }}</span></p>
+                </li>
+            @endforeach
+        </ol>
+    </section>
 
-    <ol class="mb-4 list-decimal list-outside ml-4">
-        <li>Use the form below to create a Secret Santa</li>
-        <li>Share the link on the following page with the people you would like to invite</li>
-        <li>Once everyone has joined, click the link in your email to start the Secret Santa!</li>
-    </ol>
+    <section class="card">
+        <h2 class="mb-1 text-2xl">You're the organiser</h2>
+        <p class="hint mb-5">We'll email you a private link for managing the party and drawing names.</p>
 
-    <hr class="mb-4">
-
-    @include('participant-form', ['route' => route('party.store'), 'submitText' => 'Start Secret Santa 🛷'])
+        @include('participant-form', [
+            'route' => route('party.store'),
+            'submitText' => 'Create the Secret Santa',
+            'suggestedDeadline' => $suggestedDeadline,
+        ])
+    </section>
 @endsection
