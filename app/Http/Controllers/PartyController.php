@@ -142,7 +142,10 @@ class PartyController extends Controller
         abort_unless($party->canBeInitiated(), 403);
 
         $participants = $party->participants()->pluck('email', 'id')->toArray();
-        $exclusions = $party->exclusions()->pluck('to_id', 'from_id')->toArray();
+        $exclusions = $party->exclusions()
+            ->get(['from_id', 'to_id'])
+            ->map(fn ($exclusion) => [$exclusion->from_id, $exclusion->to_id])
+            ->all();
 
         try {
             $pairings = SecretSantaRandomizer::randomize(array_keys($participants), $exclusions);

@@ -8,7 +8,7 @@ class SecretSantaRandomizer
 {
     /**
      * @param  int[]  $participants
-     * @param  array<int, int>|null  $exclusions
+     * @param  array<int, array{0: int, 1: int}>|null  $exclusions  pairs that must not draw each other
      * @return array<int, int>
      *
      * @throws InvalidSecretSantaException
@@ -49,14 +49,16 @@ class SecretSantaRandomizer
 
     private static function containsInvalidMatches(array $matches, array $exclusions): bool
     {
-        foreach ($matches as $matchKey => $matchValue) {
-            foreach ($exclusions as $exclusionKey => $exclusionValue) {
-                if (
-                    ($matchKey === $exclusionKey && $matchValue === $exclusionValue)
-                    || ($matchKey === $exclusionValue && $matchValue === $exclusionKey)
-                ) {
-                    return true;
-                }
+        $excludedPairs = [];
+
+        foreach ($exclusions as [$first, $second]) {
+            $excludedPairs["{$first}:{$second}"] = true;
+            $excludedPairs["{$second}:{$first}"] = true;
+        }
+
+        foreach ($matches as $from => $to) {
+            if (isset($excludedPairs["{$from}:{$to}"])) {
+                return true;
             }
         }
 

@@ -126,6 +126,37 @@ class PartyTest extends TestCase
         });
     }
 
+    public function test_drawing_keeps_every_exclusion_of_a_participant()
+    {
+        Mail::fake();
+
+        $creator = Participant::factory()->creator()->create();
+        $party = $creator->party;
+        $others = Participant::factory()->for($party)->count(4)->create();
+
+        $party->exclusions()->createMany([
+            ['from_id' => $creator->id, 'to_id' => $others[0]->id],
+            ['from_id' => $creator->id, 'to_id' => $others[1]->id],
+        ]);
+
+        $this->post(route('party.initiate', ['party' => $party, 'edit_token' => $creator->edit_token]))->assertRedirect();
+
+        $excluded = [
+            [$creator->id, $others[0]->id],
+            [$creator->id, $others[1]->id],
+        ];
+
+        foreach (SecretSanta::all() as $secretSanta) {
+            foreach ($excluded as [$first, $second]) {
+                $this->assertFalse(
+                    ($secretSanta->from_id === $first && $secretSanta->to_id === $second)
+                    || ($secretSanta->from_id === $second && $secretSanta->to_id === $first),
+                    'A draw returned a pair that was excluded'
+                );
+            }
+        }
+    }
+
     public function test_party_page_shows_participants()
     {
         $creator = Participant::factory()->creator()->create(['name' => 'Linda']);

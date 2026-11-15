@@ -43,7 +43,7 @@ class SecretSantaRandomizerTest extends TestCase
         ];
 
         $exclusions = [
-            2 => 4,
+            [2, 4],
         ];
 
         $this->assertAllRandomResultsMissing([
@@ -66,8 +66,8 @@ class SecretSantaRandomizerTest extends TestCase
         ];
 
         $exclusions = [
-            3 => 4,
-            5 => 4,
+            [3, 4],
+            [5, 4],
         ];
 
         $this->assertAllRandomResultsMissing([
@@ -91,8 +91,8 @@ class SecretSantaRandomizerTest extends TestCase
         ];
 
         $exclusions = [
-            2 => 3,
-            3 => 4,
+            [2, 3],
+            [3, 4],
         ];
 
         $this->expectException(InvalidSecretSantaException::class);
@@ -100,11 +100,32 @@ class SecretSantaRandomizerTest extends TestCase
         SecretSantaRandomizer::randomize($participantIds, $exclusions);
     }
 
+    public function test_every_exclusion_of_a_participant_is_kept()
+    {
+        $participantIds = [
+            2,
+            3,
+            4,
+            5,
+            6,
+        ];
+
+        $exclusions = [
+            [2, 3],
+            [2, 4],
+        ];
+
+        $this->assertAllRandomResultsMissing([2 => 3], $participantIds, $exclusions);
+        $this->assertAllRandomResultsMissing([2 => 4], $participantIds, $exclusions);
+        $this->assertAllRandomResultsMissing([3 => 2], $participantIds, $exclusions);
+        $this->assertAllRandomResultsMissing([4 => 2], $participantIds, $exclusions);
+    }
+
     public function test_can_be_created_with_a_large_number_of_exclusions()
     {
         $participantIds = range(1, 1000);
 
-        $exclusions = array_combine(range(1, 999), range(2, 1000));
+        $exclusions = array_map(fn ($from, $to) => [$from, $to], range(1, 999), range(2, 1000));
 
         $result = SecretSantaRandomizer::randomize($participantIds, $exclusions);
 
